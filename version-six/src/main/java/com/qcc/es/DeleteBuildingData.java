@@ -22,7 +22,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 public class DeleteBuildingData implements StartMiddleWare{
@@ -50,15 +49,14 @@ public class DeleteBuildingData implements StartMiddleWare{
             searchRequest.source(searchSourceBuilder);
             SearchResponse response = restClient.search(searchRequest, RequestOptions.DEFAULT);
             String scrollId = response.getScrollId();
-            dataProcess(scrollId, restClient, response.getHits());
+            dataProcess(scrollId, restClient, response.getHits().getHits());
 
         } catch (IOException var12) {
             var12.printStackTrace();
         }
     }
 
-    private static Set<String> findPerIds(SearchHits searchHits, Map<String, List<EsKeyInfo>> map) {
-        SearchHit[] hits = searchHits.getHits();
+    private static Set<String> findPerIds(SearchHit[] hits, Map<String, List<EsKeyInfo>> map) {
         Set<String> perIds = new HashSet<>();
 
         for (SearchHit hit : hits) {
@@ -125,10 +123,11 @@ public class DeleteBuildingData implements StartMiddleWare{
         return lostIds;
     }
 
-    private static void dataProcess(String scrollId, RestHighLevelClient restClient, SearchHits searchHits) {
+    private static void dataProcess(String scrollId, RestHighLevelClient restClient,
+                                    SearchHit[] hits) {
         try {
             Map<String, List<EsKeyInfo>> map = new HashMap<>();
-            Set<String> perIds = findPerIds(searchHits, map);
+            Set<String> perIds = findPerIds(hits, map);
 
             while (!perIds.isEmpty()) {
 
@@ -141,7 +140,7 @@ public class DeleteBuildingData implements StartMiddleWare{
                 SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
                 searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
                 SearchResponse response = restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
-                dataProcess(scrollId, restClient, response.getHits());
+                dataProcess(scrollId, restClient, response.getHits().getHits());
             }
 
         } catch (IOException e) {
