@@ -25,9 +25,9 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-public class DeleteBuildingData {
+public class DeleteBuildingData implements StartMiddleWare{
 
-    public static void main(String[] args) {
+    public void start() {
         RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
         createScroll(restClient);
         System.exit(0);

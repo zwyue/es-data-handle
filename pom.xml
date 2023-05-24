@@ -37,6 +37,7 @@
         <jedis.version>4.3.0</jedis.version>
         <kafka.version>3.1.0</kafka.version>
         <hutool.version>5.7.21</hutool.version>
+        <spring.version>6.0.9</spring.version>
     </properties>
 
     <dependencyManagement>
