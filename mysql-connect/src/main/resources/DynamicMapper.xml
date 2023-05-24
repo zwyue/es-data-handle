@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qcc.es.DynamicMapper">
+
+    <select id="tenderInfo" resultType="map">
+        SELECT
+            `agent` AS `agent`,
+            `agent_contact` AS `agentcontact`,
+            UNIX_TIMESTAMP(`create_date`) AS `createdate`,
+            `data_status` AS `datastatus`,
+            UNIX_TIMESTAMP(`es_sync_time`) AS `essynctime`,
+            `id` AS `id`,
+            `ifb_unit` AS `ifbunit`,
+            `ifb_unit_contact` AS `ifbunitcontact`,
+            `ifb_unit_json` AS `ifbunitjson`,
+            `ifb_unit_keyno` AS `ifbunitkeyno`,
+            `industry` AS `industry`,
+            `per_json_v2` AS `perjson`,
+            `per_keyno` AS `perid`,
+            `per_name_v2` AS `pername`,
+            `performance_type` AS `performancetype`,
+            `project_id` AS `projectid`,
+            `project_name` AS `projectname`,
+            `project_no` AS `projectno`,
+            `project_union` AS `projectunion`,
+            `province` AS `province`,
+            `province_code` AS `provincecode`,
+            UNIX_TIMESTAMP(`publish_date`) AS `publishdate`,
+            `related_reg` AS `relatedreg`,
+            `tender_type` AS `tendertype`,
+            UNIX_TIMESTAMP(`update_date`) AS `updatedate`,
+            `wtb_amt` AS `wtbamt`,
+            `wtb_info_id` AS `wtbinfoid`,
+            `wtb_nonamt` AS `wtbnonamt`,
+            `wtb_unit` AS `wtbunit`,
+            `wtb_unit_contact` AS `wtbunitcontact`,
+            `wtb_unit_keyno` AS `wtbunitkeyno`
+        FROM
+        search_sync_industry.in_building_wtb_info_v2_sync
+        <if test="whereSql!=null and whereSql !=''">
+            where ${whereSql}
+        </if>
+        limit 10000
+    </select>
+
+    <select id="dataRegister" resultType="map">
+        select * from search_sync_industry.in_building_register_info_sync_v2 where ${whereSql}  limit 10000
+    </select>
+
+    <select id="dataLabel" resultType="map">
+        select * from es_data_center.search_data_label where ${whereSql}
+    </select>
+
+    <select id="dataLabelSingle" resultType="map">
+        select distinct id, new_lab from es_data_center.search_data_label_zwy
+    </select>
+
+    <select id="dataLabelNew" resultType="com.qcc.es.SearchDataLabel">
+        select
+            new_id newId ,
+            id ,
+            old_key_no_blank oldKeyNoBlank ,
+            searchkey searchKey,
+            lab,
+            old_key oldKey ,
+            old_code oldCode
+            from es_data_center.search_data_label_zwy where ${whereSql} order by new_id
+    </select>
+
+    <insert id="insertLab">
+        insert into es_data_center.search_data_label_zwy(
+            `id` ,
+            `searchkey` ,
+            `lab`,
+            `createdate`,
+            `author`,
+            `old_code`,
+            `old_key_no_blank`,
+            `old_key`
+        ) values
+             <foreach collection="list" item="item" separator=",">
+                 (
+                 #{item.id},
+                 #{item.searchkey},
+                 #{item.lab},
+                 #{item.createdate},
+                 #{item.author},
+                 #{item.old_code},
+                 #{item.old_key_no_blank},
+                 #{item.old_key}
+                 )
+             </foreach>
+    </insert>
+
+    <update id="updateLab">
+        <foreach collection="list" item="item" separator=";" >
+            update es_data_center.search_data_label_zwy
+            set new_lab  = #{item.newLab} where id = #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateLabOrigin">
+        <foreach collection="list" item="item" separator=";" >
+            update es_data_center.search_data_label
+            set lab  = #{item.new_lab} ,author = 'zhuwy' where id = #{item.id}
+        </foreach>
+    </update>
+</mapper>
