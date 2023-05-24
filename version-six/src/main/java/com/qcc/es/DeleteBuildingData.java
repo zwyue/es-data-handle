@@ -45,12 +45,12 @@ public class DeleteBuildingData implements StartMiddleWare{
                 termQuery = QueryBuilders.termQuery("relationship", "register_v2");
             searchSourceBuilder.query(termQuery);
             searchSourceBuilder.fetchSource(new String[] {"register_v2.perid", "essynctime"}, null);
-            searchSourceBuilder.size(2000);
+            searchSourceBuilder.size(5000);
 
             searchRequest.source(searchSourceBuilder);
             SearchResponse response = restClient.search(searchRequest, RequestOptions.DEFAULT);
             String scrollId = response.getScrollId();
-            dataProcess(scrollId, restClient, response);
+            dataProcess(scrollId, restClient, response.getHits());
 
         } catch (IOException var12) {
             var12.printStackTrace();
@@ -125,24 +125,23 @@ public class DeleteBuildingData implements StartMiddleWare{
         return lostIds;
     }
 
-    private static void dataProcess(String scrollId, RestHighLevelClient restClient,
-                                    SearchResponse response) {
+    private static void dataProcess(String scrollId, RestHighLevelClient restClient, SearchHits searchHits) {
         try {
-            SearchHits searchHits = response.getHits();
             Map<String, List<EsKeyInfo>> map = new HashMap<>();
             Set<String> perIds = findPerIds(searchHits, map);
-            List<EsKeyInfo> ids = findInfoInMysql(perIds, map);
-
-            if (!ids.isEmpty()) {
-                ClientFactory.doDel(restClient, ids, "in_type_building_write_new");
-            }
 
             while (!perIds.isEmpty()) {
+
+                List<EsKeyInfo> ids = findInfoInMysql(perIds, map);
+
+                if (!ids.isEmpty()) {
+                    ClientFactory.doDel(restClient, ids, "in_type_building_write_new");
+                }
+
                 SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
                 searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
-                response =
-                    restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
-                dataProcess(scrollId, restClient, response);
+                SearchResponse response = restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
+                dataProcess(scrollId, restClient, response.getHits());
             }
 
         } catch (IOException e) {
