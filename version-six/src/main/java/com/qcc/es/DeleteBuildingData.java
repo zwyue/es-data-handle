@@ -3,6 +3,7 @@ package com.qcc.es;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.qcc.es.records.EsDataInfo;
 import com.qcc.es.records.EsKeyInfo;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +17,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -28,8 +28,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 public class DeleteBuildingData {
 
     public static void main(String[] args) {
-        RestHighLevelClient restClient =
-            ClientFactory.restClient(EsServer.BUILDING);
+        RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
         createScroll(restClient);
         System.exit(0);
     }
@@ -46,7 +45,7 @@ public class DeleteBuildingData {
                 termQuery = QueryBuilders.termQuery("relationship", "register_v2");
             searchSourceBuilder.query(termQuery);
             searchSourceBuilder.fetchSource(new String[] {"register_v2.perid", "essynctime"}, null);
-            searchSourceBuilder.size(5000);
+            searchSourceBuilder.size(2000);
 
             searchRequest.source(searchSourceBuilder);
             SearchResponse response = restClient.search(searchRequest, RequestOptions.DEFAULT);
@@ -58,28 +57,24 @@ public class DeleteBuildingData {
         }
     }
 
-    private static Set<String> findPerIds(SearchHits searchHits,
-                                          Map<String, List<EsKeyInfo>> map) {
+    private static Set<String> findPerIds(SearchHits searchHits, Map<String, List<EsKeyInfo>> map) {
         SearchHit[] hits = searchHits.getHits();
-
         Set<String> perIds = new HashSet<>();
 
         for (SearchHit hit : hits) {
-            String id = hit.getId();
-            Map<String, DocumentField> field = hit.getFields();
-            DocumentField routingDoc = field.get("_routing");
-            String rounting = (String) routingDoc.getValues().get(0);
-            Map<String, Object> sourceMap = hit.getSourceAsMap();
+            EsDataInfo esDataInfo = ClientFactory.getEsDataInfo(hit);
+            Map<String, Object> sourceMap = esDataInfo.sourceMap();
             String perId = (String) sourceMap.get("register_v2.perid");
             perIds.add(perId);
             Long essynctime = Long.valueOf(String.valueOf(sourceMap.get("essynctime")));
 
-            List<EsKeyInfo> list = map.get(rounting);
+            List<EsKeyInfo> list = map.get(esDataInfo.route());
 
             if (list == null) {
                 list = new ArrayList<>();
             }
-            EsKeyInfo registerInfo = new EsKeyInfo(id, rounting, essynctime);
+            EsKeyInfo registerInfo =
+                new EsKeyInfo(esDataInfo.esId(), esDataInfo.route(), essynctime);
             list.add(registerInfo);
             map.put(perId, list);
         }
@@ -130,39 +125,28 @@ public class DeleteBuildingData {
         return lostIds;
     }
 
-    private static void queryByScrollId(String scrollId, RestHighLevelClient restClient) {
-        try {
-            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
-            searchScrollRequest.scroll(TimeValue.timeValueMinutes(1)) ;
-            SearchResponse response =
-                restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
-            dataProcess(scrollId, restClient, response);
-
-        } catch (IOException var13) {
-            var13.printStackTrace();
-        }
-    }
-
     private static void dataProcess(String scrollId, RestHighLevelClient restClient,
                                     SearchResponse response) {
-
         try {
             SearchHits searchHits = response.getHits();
             Map<String, List<EsKeyInfo>> map = new HashMap<>();
             Set<String> perIds = findPerIds(searchHits, map);
             List<EsKeyInfo> ids = findInfoInMysql(perIds, map);
 
-
-            if(!ids.isEmpty()) {
-                ClientFactory.doDel(restClient, ids);
+            if (!ids.isEmpty()) {
+                ClientFactory.doDel(restClient, ids, "in_type_building_write_new");
             }
 
             while (!perIds.isEmpty()) {
-                queryByScrollId(scrollId, restClient);
+                SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+                searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
+                response =
+                    restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
+                dataProcess(scrollId, restClient, response);
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 }

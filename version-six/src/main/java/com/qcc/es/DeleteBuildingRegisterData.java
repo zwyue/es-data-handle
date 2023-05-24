@@ -1,16 +1,15 @@
 package com.qcc.es;
 
+import com.qcc.es.records.EsDataInfo;
 import com.qcc.es.records.EsKeyInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -22,8 +21,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 public class DeleteBuildingRegisterData {
 
     public static void main(String[] args) {
-        RestHighLevelClient restClient =
-            ClientFactory.restClient(EsServer.BUILDING);
+        RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
         createScroll(restClient);
         System.exit(0);
     }
@@ -52,32 +50,16 @@ public class DeleteBuildingRegisterData {
         }
     }
 
-    private static void findIdAndRouting(SearchHits searchHits,
-                                         List<EsKeyInfo> list) {
+    private static void findIdAndRouting(SearchHits searchHits, List<EsKeyInfo> list) {
         SearchHit[] hits = searchHits.getHits();
 
         for (SearchHit hit : hits) {
-            String id = hit.getId();
-            Map<String, DocumentField> field = hit.getFields();
-            DocumentField routingDoc = field.get("_routing");
-            String rounting = (String) routingDoc.getValues().get(0);
-            Map<String, Object> sourceMap = hit.getSourceAsMap();
-            Long essynctime = Long.valueOf(String.valueOf(sourceMap.get("essynctime")));
-            EsKeyInfo registerInfo = new EsKeyInfo(id, rounting, essynctime);
+            EsDataInfo esDataInfo = ClientFactory.getEsDataInfo(hit);
+            Long essynctime =
+                Long.valueOf(String.valueOf(esDataInfo.sourceMap().get("essynctime")));
+            EsKeyInfo registerInfo =
+                new EsKeyInfo(esDataInfo.esId(), esDataInfo.route(), essynctime);
             list.add(registerInfo);
-        }
-    }
-
-    private static void queryByScrollId(String scrollId, RestHighLevelClient restClient) {
-        try {
-            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
-            searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
-            SearchResponse response =
-                restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
-            dataProcess(scrollId, restClient, response);
-
-        } catch (IOException var13) {
-            var13.printStackTrace();
         }
     }
 
@@ -90,12 +72,15 @@ public class DeleteBuildingRegisterData {
             findIdAndRouting(searchHits, list);
 
             while (!list.isEmpty()) {
-                ClientFactory.doDel(restClient, list);
-                queryByScrollId(scrollId, restClient);
+                ClientFactory.doDel(restClient, list, "in_type_building_write_new");
+                SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+                searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
+                response = restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
+                dataProcess(scrollId, restClient, response);
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 }
