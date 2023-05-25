@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -24,11 +25,15 @@ import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
+@Log4j2
 public class DeleteBuildingData implements StartMiddleWare{
+
+    private static int forCycle = 0 ;
 
     public void start() {
         RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
         createScroll(restClient);
+        forCycle = 0;
         System.exit(0);
     }
 
@@ -43,7 +48,9 @@ public class DeleteBuildingData implements StartMiddleWare{
             TermQueryBuilder
                 termQuery = QueryBuilders.termQuery("relationship", "register_v2");
             searchSourceBuilder.query(termQuery);
-            searchSourceBuilder.fetchSource(new String[] {"register_v2.perid", "essynctime"}, null);
+            String[] includes =
+                new String[] {"register_v2.perid", "essynctime", "p1time", "p2time"};
+            searchSourceBuilder.fetchSource(includes, null);
             searchSourceBuilder.size(5000);
 
             searchRequest.source(searchSourceBuilder);
@@ -126,22 +133,25 @@ public class DeleteBuildingData implements StartMiddleWare{
     private static void dataProcess(String scrollId, RestHighLevelClient restClient,
                                     SearchHit[] hits) {
         try {
+            if (hits.length == 0) {
+                return;
+            }
+            log.info("...... for cycle : {}",forCycle);
+            forCycle ++ ;
             Map<String, List<EsKeyInfo>> map = new HashMap<>();
             Set<String> perIds = findPerIds(hits, map);
 
-            while (!perIds.isEmpty()) {
+            List<EsKeyInfo> ids = findInfoInMysql(perIds, map);
 
-                List<EsKeyInfo> ids = findInfoInMysql(perIds, map);
-
-                if (!ids.isEmpty()) {
-                    ClientFactory.doDel(restClient, ids, "in_type_building_write_new");
-                }
-
-                SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
-                searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
-                SearchResponse response = restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
-                dataProcess(scrollId, restClient, response.getHits().getHits());
+            if (!ids.isEmpty()) {
+                ClientFactory.doDel(restClient, ids, "in_type_building_write_new");
             }
+
+            SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+            searchScrollRequest.scroll(TimeValue.timeValueMinutes(1));
+            SearchResponse response =
+                restClient.scroll(searchScrollRequest, RequestOptions.DEFAULT);
+                dataProcess(scrollId, restClient, response.getHits().getHits());
 
         } catch (IOException e) {
             e.printStackTrace();

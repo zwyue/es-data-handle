@@ -1,0 +1,8 @@
+logging:
+  level:
+    root: error
+    com.qcc.es: warn
+    org.elasticsearch: warn
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
