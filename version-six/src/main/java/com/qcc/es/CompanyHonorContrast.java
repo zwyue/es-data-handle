@@ -17,20 +17,20 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-public class BuildingRegisterContrast implements StartMiddleWare{
+public class CompanyHonorContrast implements StartMiddleWare{
 
     public void start() {
-//        fromMysql2ES();
-        String ids = fromEs2Mysql();
-        fromMysql2ES(" id in (" + ids+")");
+        fromMysql2ES(null);
+//        String ids = fromEs2Mysql();
+//        fromMysql2ES(" id in (" + ids+")");
 
         System.exit(0);
     }
 
     public static void fromMysql2ES(String whereSql) {
         whereSql = whereSql == null ?
-            " es_sync_time between '2023-05-18 09:56:10' and '2023-05-18 09:56:11' " : whereSql;
-        Object obj = ConnectUtil.execute(MysqlServer.BUILDING, whereSql, null, "8");
+            " data_status = 1 and title_area = 'SX' " : whereSql;
+        Object obj = ConnectUtil.execute(MysqlServer.COMPANY, whereSql, null, "10");
 
         JSONArray jsonArray = JSON.parseArray(JSON.toJSONString(obj));
 
@@ -38,20 +38,19 @@ public class BuildingRegisterContrast implements StartMiddleWare{
         for (Object o : jsonArray) {
             JSONObject jo = (JSONObject) o ;
 
-            if(jo.getString("data_status").equals("1")) {
-
-            }else {
-                System.out.println(jo);
-            }
+//            if(jo.getString("data_status").equals("1")) {
+//
+//            }else {
+//                System.out.println(jo);
+//            }
             ids.add(((JSONObject) o).getString("id"));
         }
-        System.out.println(ids);
-//        RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
-//        ContrastData.contrast(ids, restClient);
+        RestHighLevelClient restClient = ClientFactory.restClient(EsServer.BUILDING);
+        ContrastData.contrast("company_honor_query",ids, restClient);
     }
 
     public static String fromEs2Mysql() {
-        String keyNo = "f02558a58c889877ad9391b7b1b400b9";
+        String keyNo = "90f1eaa45324e7bc7b4782d6c816daef";
         TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("compkeywords", keyNo);
         TermQueryBuilder termQueryBuilder1 = QueryBuilders.termQuery("datastatus", 1);
 
@@ -63,7 +62,7 @@ public class BuildingRegisterContrast implements StartMiddleWare{
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(boolQueryBuilder);
 
-        SearchRequest searchRequest = new SearchRequest("in_building_register_query");
+        SearchRequest searchRequest = new SearchRequest("in_building_rating_query");
         searchSourceBuilder.fetchSource(false);
         searchSourceBuilder.size(1000);
         searchRequest.source(searchSourceBuilder);

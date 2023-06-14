@@ -13,7 +13,9 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 public class ContrastData {
 
-    public static void contrast(List<String> ids, RestHighLevelClient restClient) {
+    static int i = 3 ;
+
+    public static void contrast(String index,List<String> ids, RestHighLevelClient restClient) {
 
         List<String> lostIds = new ArrayList<>();
 
@@ -31,7 +33,7 @@ public class ContrastData {
                 SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                 searchSourceBuilder.query(boolQueryBuilder);
 
-                CountRequest searchRequest = new CountRequest("in_building_register_query");
+                CountRequest searchRequest = new CountRequest(index);
                 searchRequest.source(searchSourceBuilder);
 
                 CountResponse response = restClient.count(searchRequest, RequestOptions.DEFAULT);
@@ -47,6 +49,10 @@ public class ContrastData {
             }
         });
 
+        if(i>0) {
+            i--;
+            contrast(index,lostIds, restClient) ;
+        }
         System.out.println(lostIds);
     }
 }

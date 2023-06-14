@@ -31,16 +31,56 @@ import org.apache.kafka.common.errors.WakeupException;
 public class KafkaMsg {
 
     public static void main(String[] args) {
-        record Mail(long id,String content) {}
+//        record Mail(long id,String content) {}
+//
+//
+//        List<Mail> mailList = new ArrayList<>() ;
+//
+//        for (int i = 0; i < 5; i++) {
+//            mailList.add(new Mail(i,i+1+""));
+//        }
+//
+//        mailList.forEach(System.out::println);
+        connectKafkaMiddleRating();
+        System.exit(0);
+    }
+
+    public static void connectKafkaMiddleRating() {
+
+        String body = "{\"topic\":\"elastic_building_all\",\"time\":[\"2023-06-08T05:42:00.097Z\",\"2023-06-08T05:56:00.097Z\"],\"filter\":\"none\",\"valueDeserializer\":\"String\",\"partition\":-1,\"startTime\":1686202920097,\"endTime\":\"2023-06-08T05:56:00.097Z\"}" ;
+
+        HttpResponse result = HttpRequest.post("http://aliyun-kafka-001.ld-hadoop" +
+            ".com:7766/message/search/time").header("X-Cluster-Info-Id","1").body(body).execute() ;
+
+        JSONObject resultJson = JSONUtil.parseObj(result.body());
 
 
-        List<Mail> mailList = new ArrayList<>() ;
+        resultJson.getJSONObject("data").getJSONArray("data").forEach(a->{
+            JSONObject partition = (JSONObject) a ;
+            String detailBody =
+                "{\"topic\":\"elastic_building_all\",\"partition\":"+partition.getInt("partition")+"," +
+                    "\"offset" +
+                    "\":"+partition.getInt("offset")+"," +
+                    "\"timestamp\":"+partition.getInt("timestamp")+",\"keyDeserializer\":\"String\"," +
+                    "\"valueDeserializer\":\"String\"}" ;
 
-        for (int i = 0; i < 5; i++) {
-            mailList.add(new Mail(i,i+1+""));
-        }
+            HttpResponse detailResult = HttpRequest.post("http://aliyun-kafka-001.ld-hadoop.com:7766/message/search/detail")
+                .header("X-Cluster-Info-Id","1").body(detailBody).execute() ;
 
-        mailList.forEach(System.out::println);
+            JSONObject jsonDetail = JSONUtil.parseObj(detailResult.body());
+            String value = jsonDetail.getJSONObject("data").get("value",String.class);
+            JSONObject jsonValue = JSONUtil.parseObj(value);
+
+            if(Objects.equals(jsonValue.getStr("es_id"),"a054811a754243099504fc1b989be7d0")) {
+                System.out.println("partition:"+partition.getInt("partition"));
+                System.out.println(jsonValue);
+            }
+
+            if(Objects.equals(jsonValue.getStr("es_id"),"07959f91ea11d5809c843b880d7a8cbd")) {
+                System.out.println("partition:"+partition.getInt("partition"));
+                System.out.println(jsonValue);
+            }
+        });
     }
 
     public static void connectKafkaMiddle() {

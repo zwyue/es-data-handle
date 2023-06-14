@@ -47,6 +47,15 @@
         select * from search_sync_industry.in_building_register_info_sync_v2 where ${whereSql}  limit 10000
     </select>
 
+    <select id="dataRating" resultType="map">
+        select * from search_sync_industry.in_building_comp_credit_rating_sync_v2 where ${whereSql}  limit 10000
+    </select>
+
+    <select id="dataHonor" resultType="map">
+        select * from search_sync_enterprise.ep_comp_directory_honor_sync where ${whereSql}
+            limit 100000
+    </select>
+
     <select id="dataLabel" resultType="map">
         select * from es_data_center.search_data_label where ${whereSql}
     </select>

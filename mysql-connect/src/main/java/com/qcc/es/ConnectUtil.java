@@ -65,14 +65,16 @@ public class ConnectUtil {
 
 
             return switch (method) {
-                case "1" -> dynamicMapper.tenderInfo(whereSql);
-                case "2" -> dynamicMapper.dataLabel(whereSql);
-                case "3" -> dynamicMapper.insertLab(list);
-                case "4" -> dynamicMapper.dataLabelNew(whereSql);
-                case "5" -> dynamicMapper.updateLab(list);
-                case "6" -> dynamicMapper.dataLabelSingle(whereSql);
-                case "7" -> dynamicMapper.updateLabOrigin(list);
-                case "8" -> dynamicMapper.dataRegister(whereSql);
+                case "1"    -> dynamicMapper.tenderInfo(whereSql);
+                case "2"    -> dynamicMapper.dataLabel(whereSql);
+                case "3"    -> dynamicMapper.insertLab(list);
+                case "4"    -> dynamicMapper.dataLabelNew(whereSql);
+                case "5"    -> dynamicMapper.updateLab(list);
+                case "6"    -> dynamicMapper.dataLabelSingle(whereSql);
+                case "7"    -> dynamicMapper.updateLabOrigin(list);
+                case "8"    -> dynamicMapper.dataRegister(whereSql);
+                case "9"    -> dynamicMapper.dataRating(whereSql);
+                case "10"   -> dynamicMapper.dataHonor(whereSql);
                 default -> null;
             };
         } catch (Exception e) {

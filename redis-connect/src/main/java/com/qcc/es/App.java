@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool;
  */
 public class App {
     public static void main(String[] args) {
-        batchIdc();
+        batchSet();
     }
 
 
@@ -25,11 +25,11 @@ public class App {
             Set<String> keys = jedis.keys("*");
             keys.forEach(key -> {
 
-                if (key.startsWith("mongoFinancingReportJobHandler")) {
+                if (key.contains("1620396577096810540")) {
                     String dateStr = jedis.get(key);
                     System.out.println(key + ":" + dateStr);
-                    jedis.set(key, "2023-05-23 14:00:00");
-//                    jedis.del(key);
+//                    jedis.set(key, "2023-06-08 10:00:00");
+                    jedis.del(key);
 //                    return;
                 }
 //                String dateStr = jedis.get(key);
@@ -48,13 +48,24 @@ public class App {
             Set<String> keys = jedis.keys("*");
             keys.forEach(key -> {
 
-                if (key.startsWith("sql")) {
+                if (key.contains("1620396577096810594")) {
+                    String dateStr = jedis.get(key);
+                    System.out.println(key + ":" + dateStr);
+//                    jedis.set(key, "2023-06-01 06:00:00");
                     jedis.del(key);
-                    return;
+//                    return;
                 }
-                String dateStr = jedis.get(key);
-                System.out.println(key + ":" + dateStr);
-                jedis.set(key, "2023-05-22 14:00:00");
+//                if (
+//                        key.contains("proCompanyEmployeesAiV1Handler")
+//                ) {
+//                    String dateStr = jedis.get(key);
+//                    System.out.println(key+":"+dateStr);
+//                    jedis.del(key);
+//                } else {
+////                String dateStr = jedis.get(key);
+////                System.out.println(key + ":" + dateStr);
+////                jedis.set(key, "2023-05-15 00:00:00");
+//                }
             });
         }
     }
@@ -67,16 +78,16 @@ public class App {
             Set<String> keys = jedis.keys("*");
             keys.forEach(key -> {
 
-                if (key.startsWith("checkBlacklistNewHandler")) {
-                    if (key.startsWith("sql")) {
-                        jedis.del(key);
-                        return;
-                    }
-                    String dateStr = jedis.get(key);
-                    System.out.println(key + ":" + dateStr);
-                    jedis.set(key, "2023-01-01 00:00:00");
-
-                }
+//                if (key.startsWith("checkBlacklistNewHandler")) {
+//                    if (key.startsWith("sql")) {
+//                        jedis.del(key);
+//                        return;
+//                    }
+//                    String dateStr = jedis.get(key);
+//                    System.out.println(key + ":" + dateStr);
+//                    jedis.set(key, "2023-01-01 00:00:00");
+//
+//                }
             });
         }
     }
@@ -89,22 +100,20 @@ public class App {
 
         keys.forEach(key -> {
 
-            if (key.startsWith("sql")) {
-                jedis.del(key);
-                return;
-            }
+//            if (key.startsWith("proInBuildingRoadAchievementSyncV1Handler")) {
+//                jedis.del(key);
+//                return;
+//            }
 
             if (
-                key.startsWith("buildingBaseInfoJobHandler")
-                    || key.startsWith("companyBuildingHandler")
-                    || key.startsWith("ownerJobHandler")
+                key.startsWith("ratingJobHandler")
             ) {
-//                String dateStr = jedis.get(key);
-//                System.out.println(key+":"+dateStr);
-//                jedis.set(key, "2023-05-01 00:00:00");
-            } else {
                 String dateStr = jedis.get(key);
-                System.out.println(key + ":" + dateStr);
+                System.out.println(key+":"+dateStr);
+//                jedis.set(key, "2023-06-07 14:00:00");
+            } else {
+//                String dateStr = jedis.get(key);
+//                System.out.println(key + ":" + dateStr);
 //                jedis.set(key, "2023-05-15 00:00:00");
             }
         });

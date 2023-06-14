@@ -32,4 +32,8 @@ public interface DynamicMapper {
     int updateLab(@Param("list") List<Map<String,Object>> list);
 
     int updateLabOrigin(@Param("list") List<Map<String,Object>> list);
+
+    List<Map<String,Object>> dataRating(String whereSql);
+
+    List<Map<String,Object>> dataHonor(String whereSql);
 }
