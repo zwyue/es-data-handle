@@ -6,6 +6,7 @@ public class StartApplication {
 //       new DeleteBuildingData().start();
 //       new BuildingRatingContrast().start();
 //       new BuildingRegisterContrast().start();
-       new CompanyHonorContrast().start();
+        HonorCompanyContrast.start();
+
     }
 }

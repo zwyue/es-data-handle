@@ -30,7 +30,9 @@ public class BuildingRatingContrast implements StartMiddleWare{
     public static void fromMysql2ES(String whereSql) {
         whereSql = whereSql == null ?
             " c.es_sync_time between '2023-05-18 09:56:10' and '2023-05-18 09:56:11' " : whereSql;
-        Object obj = ConnectUtil.execute(MysqlServer.BUILDING, whereSql, null, "9");
+        ExecuteParams executeParams = new ExecuteParams(MysqlServer.BUILDING,null,whereSql,null,
+            null,null,null,"9");
+        Object obj = ConnectUtil.execute(executeParams);
 
         JSONArray jsonArray = JSON.parseArray(JSON.toJSONString(obj));
 

@@ -30,7 +30,10 @@ public class CompanyHonorContrast implements StartMiddleWare{
     public static void fromMysql2ES(String whereSql) {
         whereSql = whereSql == null ?
             " data_status = 1 and title_area = 'SX' " : whereSql;
-        Object obj = ConnectUtil.execute(MysqlServer.COMPANY, whereSql, null, "10");
+
+        ExecuteParams executeParams = new ExecuteParams(MysqlServer.COMPANY,null,whereSql,null,
+            null,null,null,"10");
+        Object obj = ConnectUtil.execute(executeParams);
 
         JSONArray jsonArray = JSON.parseArray(JSON.toJSONString(obj));
 

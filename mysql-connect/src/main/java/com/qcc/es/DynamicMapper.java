@@ -36,4 +36,11 @@ public interface DynamicMapper {
     List<Map<String,Object>> dataRating(String whereSql);
 
     List<Map<String,Object>> dataHonor(String whereSql);
+
+    Integer dataHonorCount();
+
+    List<Map<String,Object>> dataHonorPage(@Param("from")int from,@Param("size")int size);
+
+    List<Map<String,Object>> dataCompany(@Param("table")String table ,
+                                         @Param("ids") List<String> list);
 }

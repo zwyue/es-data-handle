@@ -1,6 +1,8 @@
 import com.qcc.es.ConnectUtil;
+import com.qcc.es.ExecuteParams;
 import com.qcc.es.MysqlServer;
 import com.qcc.es.SearchDataLabel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,13 +22,17 @@ public class MySqlDataProcess {
 
         String whereSql =
             " lab like '%FIRM_M IND_M%' and author = 'zhuwy' ";
-        Object obj = ConnectUtil.execute(MysqlServer.DATA_CENTER, whereSql, null, "2");
+
+        ExecuteParams
+            executeParams = new ExecuteParams(MysqlServer.DATA_CENTER,null,whereSql,null,
+            null,null,null,"2");
+        Object obj = ConnectUtil.execute(executeParams);
 
         List<Map<String, Object>> listMap = (List<Map<String, Object>>) obj;
 
         List<Map<String, Object>> newMapList = new LinkedList<>();
         assert listMap != null;
-        listMap.forEach(map -> {
+        for (Map<String, Object> map : listMap) {
             String lab = (String) map.get("lab");
             String searchKey = (String) map.get("searchkey");
 
@@ -50,19 +56,28 @@ public class MySqlDataProcess {
             }
 
             if (newMapList.size() >= 1000) {
-                ConnectUtil.execute(MysqlServer.DATA_CENTER, "", newMapList, "3");
-                newMapList.clear();
-            }
-        });
 
-        ConnectUtil.execute(MysqlServer.DATA_CENTER, "", newMapList, "3");
+                executeParams = new ExecuteParams(MysqlServer.DATA_CENTER, null, null, newMapList,
+                    null, null, null, "3");
+                ConnectUtil.execute(executeParams);
+            }
+        }
+
+        executeParams = new ExecuteParams(MysqlServer.DATA_CENTER, null, null, newMapList,
+            null, null, null, "3");
+        ConnectUtil.execute(executeParams);
     }
 
 
     public static void replaceData() {
 
         String whereSql = " new_id >= 5191 and new_id < 6268 ";
-        Object obj = ConnectUtil.execute(MysqlServer.DATA_CENTER, whereSql, null, "4");
+
+
+        ExecuteParams
+            executeParams = new ExecuteParams(MysqlServer.DATA_CENTER,null,whereSql,null,
+            null,null,null,"4");
+        Object obj = ConnectUtil.execute(executeParams);
         List<SearchDataLabel> listMap = (List<SearchDataLabel>) obj;
 
         assert listMap != null;
@@ -81,12 +96,22 @@ public class MySqlDataProcess {
             newMapList.add(map);
         });
 
-        ConnectUtil.execute(MysqlServer.DATA_CENTER, "", newMapList, "5");
+        executeParams = new ExecuteParams(MysqlServer.DATA_CENTER, null, null, newMapList,
+            null, null, null, "5");
+        ConnectUtil.execute(executeParams);
     }
 
     public static void replaceDataOrigin() {
-        Object obj = ConnectUtil.execute(MysqlServer.DATA_CENTER, null, null, "6");
+
+        ExecuteParams
+            executeParams = new ExecuteParams(MysqlServer.DATA_CENTER,null,null,null,
+            null,null,null,"6");
+
+        Object obj = ConnectUtil.execute(executeParams);
         List<Map<String, Object>> listMap = (List<Map<String, Object>>) obj;
-        ConnectUtil.execute(MysqlServer.DATA_CENTER, "", listMap, "7");
+
+        executeParams = new ExecuteParams(MysqlServer.DATA_CENTER, null, null, listMap,
+            null, null, null, "7");
+        ConnectUtil.execute(executeParams);
     }
 }

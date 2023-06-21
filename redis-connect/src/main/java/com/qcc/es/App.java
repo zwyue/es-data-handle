@@ -48,11 +48,11 @@ public class App {
             Set<String> keys = jedis.keys("*");
             keys.forEach(key -> {
 
-                if (key.contains("1620396577096810594")) {
+                if (key.contains("proInBuildingRoadAchievementSyncV1Handler")) {
                     String dateStr = jedis.get(key);
                     System.out.println(key + ":" + dateStr);
-//                    jedis.set(key, "2023-06-01 06:00:00");
-                    jedis.del(key);
+                    jedis.set(key, "2023-06-14 20:00:00");
+//                    jedis.del(key);
 //                    return;
                 }
 //                if (

@@ -94,7 +94,10 @@ public class DeleteBuildingData implements StartMiddleWare{
         perIds.forEach(id -> perIdStr.append("'").append(id).append("',"));
 
         String whereSql = " id in ( " + perIdStr.substring(0, perIdStr.lastIndexOf(",")) + " )";
-        Object obj = ConnectUtil.execute(MysqlServer.BUILDING, whereSql, null, "8");
+
+        ExecuteParams executeParams = new ExecuteParams(MysqlServer.BUILDING,null,whereSql,null,
+            null,null,null,"8");
+        Object obj = ConnectUtil.execute(executeParams);
 
         JSONArray jsonArray = JSON.parseArray(JSON.toJSONString(obj));
 

@@ -51,9 +51,59 @@
         select * from search_sync_industry.in_building_comp_credit_rating_sync_v2 where ${whereSql}  limit 10000
     </select>
 
+    <select id="dataHonorCount" resultType="int">
+        select count(distinct comp_keyno) from search_sync_enterprise.ep_comp_directory_honor_sync
+    </select>
+
+    <select id="dataHonorPage" resultType="map">
+        select distinct comp_keyno from search_sync_enterprise.ep_comp_directory_honor_sync limit
+            ${from} , ${size}
+    </select>
+
     <select id="dataHonor" resultType="map">
         select * from search_sync_enterprise.ep_comp_directory_honor_sync where ${whereSql}
             limit 100000
+    </select>
+
+    <select id="dataCompany" resultType="map">
+        <if test="table == '0'.toString()">
+            SELECT *  FROM company_info_sync_0
+        </if>
+        <if test="table == '1'.toString()">
+            SELECT *  FROM company_info_sync_1
+        </if>
+        <if test="table == '2'.toString()">
+            SELECT *  FROM company_info_sync_2
+        </if>
+        <if test="table == '3'.toString()">
+            SELECT *  FROM company_info_sync_3
+        </if>
+        <if test="table == '4'.toString()">
+            SELECT *  FROM company_info_sync_4
+        </if>
+        <if test="table == '5'.toString()">
+            SELECT *  FROM company_info_sync_5
+        </if>
+        <if test="table == '6'.toString()">
+            SELECT *  FROM company_info_sync_6
+        </if>
+        <if test="table == '7'.toString()">
+            SELECT *  FROM company_info_sync_7
+        </if>
+        <if test="table == 'g'.toString()">
+            SELECT *  FROM company_info_g_sync
+        </if>
+        <if test="table == 'h'.toString()">
+            SELECT *  FROM company_info_ht_sync
+        </if>
+        <if test="table == 's'.toString()">
+            SELECT *  FROM company_info_s_sync
+        </if>
+
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+           #{id}
+        </foreach>
     </select>
 
     <select id="dataLabel" resultType="map">
