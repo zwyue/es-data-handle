@@ -13,24 +13,24 @@ import redis.clients.jedis.JedisPool;
  */
 public class App {
     public static void main(String[] args) {
-        batchSet();
+        batchIdc();
     }
 
 
     public static void batchIdc() {
         Jedis jedis;
-        try (JedisPool pool = ConnectRedis.returnJedisPool(37)) {
+        try (JedisPool pool = ConnectRedis.returnJedisPool(17)) {
             jedis = pool.getResource();
 
             Set<String> keys = jedis.keys("*");
             keys.forEach(key -> {
 
-                if (key.contains("1620396577096810540")) {
+                if (key.contains("1620396577096810608")) {
                     String dateStr = jedis.get(key);
                     System.out.println(key + ":" + dateStr);
-//                    jedis.set(key, "2023-06-08 10:00:00");
-                    jedis.del(key);
-//                    return;
+//                    jedis.set(key, "2021-07-06 20:44:44");
+//                    jedis.del(key);
+                    return;
                 }
 //                String dateStr = jedis.get(key);
 //                System.out.println(key + ":" + dateStr);

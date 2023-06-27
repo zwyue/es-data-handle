@@ -14,7 +14,7 @@ public class HonorCompanyContrast {
 
         ExecuteParams executeParams0 = new ExecuteParams(MysqlServer.COMPANY, null, null, null,
             null, null, null, "12");
-        Object obj = ConnectUtil.execute(executeParams0);
+        var obj = ConnectUtil.execute(executeParams0);
 
         int count = (int) obj;
 
@@ -27,7 +27,7 @@ public class HonorCompanyContrast {
             ExecuteParams executeParams = new ExecuteParams(MysqlServer.COMPANY, null, null,
                 null,
                 null, from, 1000, "13");
-            Object result = ConnectUtil.execute(executeParams);
+            var result = ConnectUtil.execute(executeParams);
 
             List list = (List) result;
 
@@ -67,7 +67,7 @@ public class HonorCompanyContrast {
                         executeParams =
                             new ExecuteParams(MysqlServer.COMPANY, table, null, null, newList,
                                 null, null, "11");
-                        Object company = ConnectUtil.execute(executeParams);
+                        var company = ConnectUtil.execute(executeParams);
                         List corps = (List) company;
 
                         if (corps.size() == 1) {
